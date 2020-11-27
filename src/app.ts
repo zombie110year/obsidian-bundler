@@ -1,6 +1,7 @@
 import { MetadataCache, App, ViewState } from "obsidian";
 import { join as joinPath, parse as parsePath, ParsedPath } from "path";
 import { copyFile, PathLike } from "fs";
+import { pathToFileURL } from 'url';
 
 // 声明全局变量 app 的类型
 declare global {
@@ -27,18 +28,22 @@ class ReferenceGraphNode {
 function getCurrentGraph(): ReferenceGraphNode {
   const view_state: ViewState = app.workspace.activeLeaf.getViewState();
   const path = view_state.state.file;
-  return getLinkedNodes(path);
+  let recorder = new Set<string>();
+  return getLinkedNodes(path, recorder);
 }
 
-function getLinkedNodes(start: string): ReferenceGraphNode {
+function getLinkedNodes(start: string, recorder: Set<string>): ReferenceGraphNode {
   let x = new ReferenceGraphNode(start);
+  recorder.add(start);
   // todo: read resolved links for specified file
   // @ts-ignore
   const links: Object = app.metadataCache.resolvedLinks[start];
   console.debug(start, links);
   if (links) {
     Object.entries(links).forEach(([path, _count]) => {
-      x.addLinkedNode(getLinkedNodes(path));
+      if (!recorder.has(path)) {
+        x.addLinkedNode(getLinkedNodes(path, recorder));
+      }
     });
   }
 
