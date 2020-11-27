@@ -1,7 +1,6 @@
-import { MetadataCache, App, ViewState } from "obsidian";
-import { join as joinPath, parse as parsePath, ParsedPath } from "path";
+import { App, ViewState } from "obsidian";
+import { join as joinPath, parse as parsePath } from "path";
 import { copyFile, PathLike } from "fs";
-import { pathToFileURL } from "url";
 import { remote } from "electron";
 
 // 声明全局变量 app 的类型
