@@ -1,4 +1,4 @@
-import { dbgDumpGraph, bundleCurrentGraph } from "src/app";
+import { dbgDumpGraph, bundleCurrentGraph, dbgDumpTasks } from "src/app";
 import { Plugin, App, PluginSettingTab, Modal, Setting } from "obsidian";
 
 export default class ObsidianBundlerPlugin extends Plugin {
@@ -48,6 +48,10 @@ export default class ObsidianBundlerPlugin extends Plugin {
 
   dbg_dump_graph() {
     return dbgDumpGraph();
+  }
+
+  dbg_dump_tasks() {
+    return dbgDumpTasks();
   }
 }
 

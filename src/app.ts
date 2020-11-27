@@ -133,3 +133,10 @@ export function dbgDumpGraph() {
   const graph = getCurrentGraph();
   return graph;
 }
+
+export function dbgDumpTasks() {
+  const graph = getCurrentGraph();
+  let tasks = new TaskManager("src", "dest");
+  makeTask(tasks, graph);
+  return tasks;
+}
