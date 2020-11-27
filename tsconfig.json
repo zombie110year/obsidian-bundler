@@ -18,5 +18,8 @@
   },
   "include": [
     "**/*.ts"
+  ],
+  "files": [
+    "./obsidian.d.ts"
   ]
 }
