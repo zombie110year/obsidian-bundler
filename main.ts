@@ -53,6 +53,12 @@ export default class ObsidianBundlerPlugin extends Plugin {
   dbg_dump_tasks() {
     return dbgDumpTasks();
   }
+
+  bundle() {
+    bundleCurrentGraph().finally(() => {
+      console.log("obsidian bundle over");
+    });
+  }
 }
 
 class SampleModal extends Modal {

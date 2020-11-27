@@ -1,7 +1,8 @@
 import { MetadataCache, App, ViewState } from "obsidian";
 import { join as joinPath, parse as parsePath, ParsedPath } from "path";
 import { copyFile, PathLike } from "fs";
-import { pathToFileURL } from 'url';
+import { pathToFileURL } from "url";
+import { remote } from "electron";
 
 // 声明全局变量 app 的类型
 declare global {
@@ -32,7 +33,10 @@ function getCurrentGraph(): ReferenceGraphNode {
   return getLinkedNodes(path, recorder);
 }
 
-function getLinkedNodes(start: string, recorder: Set<string>): ReferenceGraphNode {
+function getLinkedNodes(
+  start: string,
+  recorder: Set<string>
+): ReferenceGraphNode {
   let x = new ReferenceGraphNode(start);
   recorder.add(start);
   // todo: read resolved links for specified file
@@ -115,12 +119,15 @@ function makeTask(taskmgr: TaskManager, node: ReferenceGraphNode) {
   }
 }
 
-export function bundleCurrentGraph() {
+export async function bundleCurrentGraph() {
   // todo: get vault root path
   // @ts-ignore
   const vault = app.vault.adapter.basePath;
   // todo: choose destination path by user
-  const dest = "";
+  const result = await remote.dialog.showOpenDialog({
+    properties: ["openDirectory"],
+  });
+  const dest = result.filePaths.last();
   const graph = getCurrentGraph();
   let tasks = new TaskManager(vault, dest);
   makeTask(tasks, graph);
