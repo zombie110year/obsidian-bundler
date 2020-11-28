@@ -1,4 +1,4 @@
-import { dbgDumpGraph, bundleCurrentGraph, dbgDumpTasks } from "src/app";
+import { bundleGraph } from "src/app";
 import { Plugin, App, PluginSettingTab, Modal, Setting } from "obsidian";
 
 export default class ObsidianBundlerPlugin extends Plugin {
@@ -21,8 +21,9 @@ export default class ObsidianBundlerPlugin extends Plugin {
           }
         } else {
           // running
-          bundleCurrentGraph().finally(() => {
-            console.log(`obsidian bundler: bundled over`);
+          const start = app.workspace.activeLeaf.getViewState().state.file;
+          bundleGraph(start).finally(() => {
+            console.log(`obsidian bundler: bundled '${start}' over`);
           });
         }
       },
@@ -47,20 +48,6 @@ export default class ObsidianBundlerPlugin extends Plugin {
 
   onunload() {
     console.log("unloading plugin");
-  }
-
-  dbg_dump_graph() {
-    return dbgDumpGraph();
-  }
-
-  dbg_dump_tasks() {
-    return dbgDumpTasks();
-  }
-
-  bundle() {
-    bundleCurrentGraph().finally(() => {
-      console.log("obsidian bundle over");
-    });
   }
 }
 

@@ -24,12 +24,12 @@ class ReferenceGraphNode {
 
 /**
  * findout all linked notes, attachments, then construct them into a graph object.
+ *
+ * @param {string} start -- start point, should be a xxx.md path inside vault.
  */
-function getCurrentGraph(): ReferenceGraphNode {
-  const view_state: ViewState = app.workspace.activeLeaf.getViewState();
-  const path = view_state.state.file;
+function findoutGraph(start: string): ReferenceGraphNode {
   let recorder = new Set<string>();
-  return getLinkedNodes(path, recorder);
+  return getLinkedNodes(start, recorder);
 }
 
 function getLinkedNodes(
@@ -106,30 +106,23 @@ function makeTask(taskmgr: TaskManager, node: ReferenceGraphNode) {
   }
 }
 
-export async function bundleCurrentGraph() {
+/**
+ * bundle a graph starts with `start` note.
+ *
+ * @param {string} start -- should be a xxx.md path inside vault
+ */
+export async function bundleGraph(start: string) {
   // @ts-ignore
   const vault = app.vault.adapter.basePath;
   const result = await remote.dialog.showOpenDialog({
     properties: ["openDirectory"],
   });
   const dest = result.filePaths.last();
-  const graph = getCurrentGraph();
+  const graph = findoutGraph(start);
   let tasks = new TaskManager(vault, dest);
   makeTask(tasks, graph);
 
   await mkdir(joinPath(dest, "assets"), { recursive: true });
   await tasks.performTask();
   console.log("all coping task completed!");
-}
-
-export function dbgDumpGraph() {
-  const graph = getCurrentGraph();
-  return graph;
-}
-
-export function dbgDumpTasks() {
-  const graph = getCurrentGraph();
-  let tasks = new TaskManager("src", "dest");
-  makeTask(tasks, graph);
-  return tasks;
 }
