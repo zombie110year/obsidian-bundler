@@ -25,7 +25,7 @@ export default class ObsidianBundlerPlugin extends Plugin {
       },
     });
 
-    this.addSettingTab(new SampleSettingTab(this.app, this));
+    this.addSettingTab(new ObsidianBundlerSettingTab(this.app, this));
 
     this.registerEvent(
       this.app.on("codemirror", (cm: CodeMirror.Editor) => {
@@ -61,6 +61,7 @@ export default class ObsidianBundlerPlugin extends Plugin {
   }
 }
 
+// todo: show a confirm modal before perform coping.
 class SampleModal extends Modal {
   constructor(app: App) {
     super(app);
@@ -77,24 +78,24 @@ class SampleModal extends Modal {
   }
 }
 
-class SampleSettingTab extends PluginSettingTab {
+class ObsidianBundlerSettingTab extends PluginSettingTab {
   display(): void {
     let { containerEl } = this;
 
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Settings for my awesome plugin." });
+    containerEl.createEl("h2", { text: "Settings for Obsidian Bundler" });
 
+    // todo: parse wiki links
     new Setting(containerEl)
-      .setName("Setting #1")
-      .setDesc("It's a secret")
-      .addText((text) =>
-        text
-          .setPlaceholder("Enter your secret")
-          .setValue("")
-          .onChange((value) => {
-            console.log("Secret: " + value);
-          })
-      );
+      .setName("Parse Wiki Links(todo)")
+      .setDesc(
+        "parse wiki links into markdown links. This function is working in process."
+      )
+      .addSlider((slider) => {
+        slider.onChange((value) => {
+          console.debug(`Parse Wiki Links set to ${value}`);
+        });
+      });
   }
 }

@@ -107,10 +107,8 @@ function makeTask(taskmgr: TaskManager, node: ReferenceGraphNode) {
 }
 
 export async function bundleCurrentGraph() {
-  // todo: get vault root path
   // @ts-ignore
   const vault = app.vault.adapter.basePath;
-  // todo: choose destination path by user
   const result = await remote.dialog.showOpenDialog({
     properties: ["openDirectory"],
   });
