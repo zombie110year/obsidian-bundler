@@ -1,6 +1,6 @@
 import { App, ViewState } from "obsidian";
 import { join as joinPath, parse as parsePath } from "path";
-import { copyFile, PathLike } from "fs";
+import { copyfile, mkdir } from "./trans_promise";
 import { remote } from "electron";
 
 // 声明全局变量 app 的类型
@@ -53,28 +53,17 @@ function getLinkedNodes(
   return x;
 }
 
-function cp(src: string, dest: PathLike): Promise<void> {
-  return new Promise(function (resolve, reject) {
-    copyFile(src, dest, function () {
-      resolve();
-    });
-  });
-}
-
 class CopingTask {
   src: string;
   dest: string;
 
-  constructor(
-    vault_root: string,
-    dest_root: string,
-    path: string,
-    type: "note" | "asset"
-  ) {
+  constructor(vault_root: string, dest_root: string, path: string) {
     this.src = joinPath(vault_root, path);
     // flatten
-    const name = parsePath(path).base;
-    if (type === "note") {
+    const _path = parsePath(path);
+    const name = _path.base;
+    const type = _path.ext;
+    if (type === ".md") {
       this.dest = joinPath(dest_root, name);
     } else {
       this.dest = joinPath(dest_root, "assets", name);
@@ -82,7 +71,7 @@ class CopingTask {
   }
 
   async copy() {
-    return cp(this.src, this.dest).then(() =>
+    return copyfile(this.src, this.dest).then(() =>
       console.log(`copy ${this.src} to ${this.dest}`)
     );
   }
@@ -99,8 +88,8 @@ class TaskManager {
     this.tasks = [];
   }
 
-  addTask(path: string, type: "note" | "asset") {
-    this.tasks.push(new CopingTask(this.vault, this.dest, path, type));
+  addTask(path: string) {
+    this.tasks.push(new CopingTask(this.vault, this.dest, path));
   }
 
   async performTask() {
@@ -109,8 +98,7 @@ class TaskManager {
 }
 
 function makeTask(taskmgr: TaskManager, node: ReferenceGraphNode) {
-  // todo: check type.
-  taskmgr.addTask(node.path, "note");
+  taskmgr.addTask(node.path);
   if (node.links.length !== 0) {
     for (let subnode of node.links) {
       makeTask(taskmgr, subnode);
@@ -130,9 +118,10 @@ export async function bundleCurrentGraph() {
   const graph = getCurrentGraph();
   let tasks = new TaskManager(vault, dest);
   makeTask(tasks, graph);
-  tasks.performTask().then(() => {
-    console.log("all coping task completed!");
-  });
+
+  await mkdir(joinPath(dest, "assets"), { recursive: true });
+  await tasks.performTask();
+  console.log("all coping task completed!");
 }
 
 export function dbgDumpGraph() {
