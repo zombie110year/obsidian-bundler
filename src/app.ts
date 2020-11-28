@@ -1,7 +1,6 @@
 import { App, ViewState } from "obsidian";
 import { join as joinPath, parse as parsePath } from "path";
 import { copyfile, mkdir } from "./trans_promise";
-import { remote } from "electron";
 
 // 声明全局变量 app 的类型
 declare global {
@@ -27,7 +26,7 @@ class ReferenceGraphNode {
  *
  * @param {string} start -- start point, should be a xxx.md path inside vault.
  */
-function findoutGraph(start: string): ReferenceGraphNode {
+export function findoutGraph(start: string): ReferenceGraphNode {
   let recorder = new Set<string>();
   return getLinkedNodes(start, recorder);
 }
@@ -77,7 +76,7 @@ class CopingTask {
   }
 }
 
-class TaskManager {
+export class TaskManager {
   vault: string;
   dest: string;
   tasks: Array<CopingTask>;
@@ -92,37 +91,16 @@ class TaskManager {
     this.tasks.push(new CopingTask(this.vault, this.dest, path));
   }
 
+  importGraph(node: ReferenceGraphNode) {
+    this.addTask(node.path);
+    if (node.links.length !== 0) {
+      for (let subnode of node.links) {
+        this.importGraph(subnode);
+      }
+    }
+  }
+
   async performTask() {
     return Promise.all(this.tasks.map((t) => t.copy()));
   }
-}
-
-function makeTask(taskmgr: TaskManager, node: ReferenceGraphNode) {
-  taskmgr.addTask(node.path);
-  if (node.links.length !== 0) {
-    for (let subnode of node.links) {
-      makeTask(taskmgr, subnode);
-    }
-  }
-}
-
-/**
- * bundle a graph starts with `start` note.
- *
- * @param {string} start -- should be a xxx.md path inside vault
- */
-export async function bundleGraph(start: string) {
-  // @ts-ignore
-  const vault = app.vault.adapter.basePath;
-  const result = await remote.dialog.showOpenDialog({
-    properties: ["openDirectory"],
-  });
-  const dest = result.filePaths.last();
-  const graph = findoutGraph(start);
-  let tasks = new TaskManager(vault, dest);
-  makeTask(tasks, graph);
-
-  await mkdir(joinPath(dest, "assets"), { recursive: true });
-  await tasks.performTask();
-  console.log("all coping task completed!");
 }

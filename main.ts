@@ -1,5 +1,8 @@
-import { bundleGraph } from "src/app";
+import { findoutGraph, TaskManager } from "src/app";
 import { Plugin, App, PluginSettingTab, Modal, Setting } from "obsidian";
+import { remote } from "electron";
+import { mkdir } from "src/trans_promise";
+import { join } from "path";
 
 export default class ObsidianBundlerPlugin extends Plugin {
   onload() {
@@ -21,10 +24,43 @@ export default class ObsidianBundlerPlugin extends Plugin {
           }
         } else {
           // running
+          // note: unpublic API, get current note's path
           const start = app.workspace.activeLeaf.getViewState().state.file;
-          bundleGraph(start).finally(() => {
-            console.log(`obsidian bundler: bundled '${start}' over`);
-          });
+          // note: unpublic API, get current note's path
+          // @ts-ignore
+          const vault = app.vault.adapter.basePath;
+          remote.dialog
+            .showOpenDialog({ properties: ["openDirectory"] })
+            .then((result) => {
+              return result.filePaths.last();
+            })
+            .then((dest) => {
+              const graph = findoutGraph(start);
+              let tasks = new TaskManager(vault, dest);
+              tasks.importGraph(graph);
+              return {
+                taskmanager: tasks,
+                destination: dest,
+              };
+            })
+            .then(({ taskmanager, destination }) => {
+              // todo confirm
+              return {
+                taskmanager,
+                destination,
+              };
+            })
+            .then(({ taskmanager, destination }) => {
+              mkdir(join(destination, "assets"), { recursive: true })
+                .then(() => {
+                  return taskmanager.performTask();
+                })
+                .finally(() => {
+                  console.log(
+                    `obisidan bundler: '${start}' bundled into '${destination}'`
+                  );
+                });
+            });
         }
       },
     });
