@@ -6,6 +6,7 @@ Select current note as a start point, iterate the graph contains it, and copy al
     + [ ] TODO: parse internal links.
 + the notes will be flatten in the root path.
 + the attachments will be placed into subdirectory `/assets`.
++ [ ] TODO: generate textbundle's info.json
 
 ### How to use
 
