@@ -72,7 +72,7 @@ class CopingTask {
 
   async copy() {
     return copyfile(this.src, this.dest).then(() =>
-      console.log(`copy ${this.src} to ${this.dest}`)
+      console.debug(`copy ${this.src} to ${this.dest}`)
     );
   }
 }
