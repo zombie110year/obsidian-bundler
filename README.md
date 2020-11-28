@@ -8,7 +8,7 @@ Select current note as a start point, iterate the graph contains it, and copy al
 + the attachments will be placed into subdirectory `/assets`.
 + [ ] TODO: generate textbundle's info.json
 
-![演示](docs/usage.mp4)
+![演示](docs/usage.webp)
 
 ### How to use
 
