@@ -4,24 +4,27 @@ import { Plugin, App, PluginSettingTab, Modal, Setting } from "obsidian";
 export default class ObsidianBundlerPlugin extends Plugin {
   onload() {
     console.log("loading obsidian bundler");
+
+    // bundle current note
     this.addCommand({
-      id: "open-modal-obsidian-bundler-control",
-      name: "Open Bundler Modal",
-      callback: () => {
-        let leaf = this.app.workspace.activeLeaf;
-        if (leaf) {
-          new SampleModal(this.app).open();
-        }
-      },
+      id: "obsidian-bundler-bundle-current-note",
+      name: "Bundle Current Note",
       checkCallback: (checking: boolean) => {
-        let leaf = app.workspace.activeLeaf;
-        if (leaf) {
-          if (!checking) {
-            new SampleModal(this.app).open();
+        if (checking) {
+          // note: unpublic API, get current note's path
+          const start = app.workspace.activeLeaf?.getViewState().state.file;
+          if (start) {
+            return true;
+          } else {
+            console.error(`obsidian bundler: Current Leaf didn't open a note.`);
+            return false;
           }
-          return true;
+        } else {
+          // running
+          bundleCurrentGraph().finally(() => {
+            console.log(`obsidian bundler: bundled over`);
+          });
         }
-        return false;
       },
     });
 
